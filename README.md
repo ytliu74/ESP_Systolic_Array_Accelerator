@@ -9,13 +9,30 @@
   * Top Module (/ESP_Systolic_Array_Accelerator/cmod/Systolic/SysTop)
 
 * hls:  HLS folders with HLS scripts, directories to process files need to be added
-* matchlib: SystemC Matchlib library (older version) from Nvidia (https://github.com/NVlabs/matchlib)
+<!-- * matchlib: SystemC Matchlib library (older version) from Nvidia (https://github.com/NVlabs/matchlib) -->
 
 ## SystemC and RTL Simulation Tools 
 * SystemC 2.3.1
-* Catapult 10.5b
-* Verdi O-2018.09-SP2-7
-* VCS O-2018.09-SP2-11
+* Catapult Ultra Synthesis 2021.1_1/966904 (Production Release)
+* VCS_vQ-2020.03-SP2.dve
+* verdi_vQ-2020.03-SP2
+
+### SystemC Simulation
+
+1. Clone this repo to your local place:
+```bash
+git clone https://github.com/ytliu74/ESP_Systolic_Array_Accelerator.git
+```
+
+2. Download required submodules using `./set_vars.csh`.
+    - You might need to modified the path to Catapult in `cmod/cmod_Makefile` by `MGC_HOME` variable.
+3. Then you can navigate to the systolic array directory and run the simulation for different moduels. Say you want to run the simulation for `Control`:
+```bash
+cd cmod/Systolic/Control
+make all  # to compile the code and generate sim_test
+make run  # to run the simulation
+```
+
 
 ## AXI Configuration 
 * 0--0x00: dummy
