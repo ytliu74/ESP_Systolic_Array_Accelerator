@@ -18,33 +18,25 @@ TOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../)
 ROOT ?= $(TOT)
 
 # Location of submodules
-CONNECTIONS_HOME ?= $(ROOT)/connections
 RAPIDJSON_HOME ?= $(ROOT)/rapidjson
 
-BOOST_HOME ?= 
-SYSTEMC_HOME ?= 
-CATAPULT_HOME ?= 
-
-CC = g++ 
+CC = g++
 
 INCDIR ?=
-INCDIR += -I. -I$(SYSTEMC_HOME)/include -I$(BOOST_HOME)/include -I$(CATAPULT_HOME)/Mgc_home/shared/include
-INCDIR += -I$(CONNECTIONS_HOME)/include
-INCDIR += -I$(RAPIDJSON_HOME)/include
-INCDIR += -I$(MATCHLIB_HOME)/include
+INCDIR += -I. -I$(BOOST_HOME)/include -I$(RAPIDJSON_HOME)/include -I$(CATAPULT_HOME)/Mgc_home/shared/include
 
 LIBDIR ?=
-LIBDIR += -L. -L$(SYSTEMC_HOME)/lib-linux64 -L$(BOOST_HOME)/lib
+LIBDIR += -L. -L$(BOOST_HOME)/lib -L$(CATAPULT_HOME)/Mgc_home/shared/lib
 
+DEBUG_LEVEL ?= 1
 CFLAGS ?= 
-CFLAGS += -Wall -Wno-unknown-pragmas -Wno-virtual-move-assign -Wno-unused-local-typedefs -std=c++11 $(INCDIR) $(LIBDIR)
-
+CFLAGS += -Wall -Wno-unknown-pragmas -std=c++11 $(INCDIR) $(LIBDIR) -DDEBUG_LEVEL=$(DEBUG_LEVEL)
 
 HLS_CATAPULT ?= 1
 ifeq ($(HLS_CATAPULT),1)
   CFLAGS += -DHLS_CATAPULT
 endif
-#
+
 LIBS ?=
 LIBS += -lstdc++ -lsystemc -lm -lpthread -lboost_timer -lboost_chrono -lboost_system
 
@@ -54,6 +46,9 @@ LIBS += -lstdc++ -lsystemc -lm -lpthread -lboost_timer -lboost_chrono -lboost_sy
 # 1 = Cycle-accurate view of Connections port and channel code, CONNECTIONS_ACCURATE_SIM. (default)
 # 2 = Faster TLM view of Connections port and channel code, CONNECTIONS_FAST_SIM.
 SIM_MODE ?= 1
+ifeq ($(SIM_MODE),0)
+	USER_FLAGS += -DCONNECTIONS_SYN_SIM
+endif
 ifeq ($(SIM_MODE),1)
 	USER_FLAGS += -DCONNECTIONS_ACCURATE_SIM -DSC_INCLUDE_DYNAMIC_PROCESSES
 endif
@@ -73,8 +68,8 @@ endif
 .PHONY: Build
 Build: all
 
-clean:
+clean: cov_clean
 	rm -rf *.o sim_* dump.vcd
 
-#CMOD_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-#include $(CMOD_DIR)/cov_Makefile
+CMOD_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+include $(CMOD_DIR)/cov_Makefile

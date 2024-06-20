@@ -47,7 +47,7 @@
  */
 template <typename axiCfg> class SlaveFromFile : public sc_module {
  public:
-  static const int kDebugLevel = 0;
+  static const int kDebugLevel = 1;
   typedef axi::axi4<axiCfg> axi4_;
 
   typename axi4_::read::template slave<> if_rd;
@@ -79,7 +79,7 @@ template <typename axiCfg> class SlaveFromFile : public sc_module {
     std::vector< std::vector<std::string> > dataList = reader.readCSV();
     for (unsigned int i=0; i < dataList.size(); i++) {
       std::vector<std::string> vec = dataList[i];
-      NVHLS_ASSERT_MSG(vec.size() == 2, "Each_request_must_have_two_elements");
+      NVHLS_ASSERT_MSG(vec.size() == 2, "Each request must have two elements");
       std::stringstream ss;
       sc_uint<axi4_::ADDR_WIDTH> addr_sc_uint;
       ss << hex << vec[0];

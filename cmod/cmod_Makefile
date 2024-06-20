@@ -13,35 +13,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+CXXFLAGS += -g -std=c++11 -Wall -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-label
+CFLAGS += -g -std=c++11 -Wall -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-label
 TOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../)
 ROOT ?= $(TOT)
 
 # Location of submodules
-CONNECTIONS_HOME ?= $(ROOT)/matchlib/connections
-RAPIDJSON_HOME ?= $(ROOT)/matchlib/rapidjson
-MATCHLIB_HOME ?= $(ROOT)/matchlib/cmod
+CONNECTIONS_HOME = $(ROOT)/matchlib_connections
+RAPIDJSON_HOME = $(ROOT)/rapidjson
+MATCHLIB_HOME = $(ROOT)/matchlib/cmod
 
+MGC_HOME = /usr/local/tools/mentor/Catapult_2021/Mgc_home
 
 # PLEASE SET BOOST_HOME, SYSTEMC_HOME, CATAPULT_HOME to correct path 
-BOOST_HOME ?= 
-SYSTEMC_HOME ?=
-CATAPULT_HOME ?= 
+BOOST_HOME = $(ROOT)/boost_home
+SYSTEMC_HOME = $(ROOT)/systemc-2.3.1a
+CATAPULT_HOME = $(MGC_HOME)
 # 
 
-CC = g++
+AC_TYPES = $(ROOT)/ac_types
+AC_SIMUTILS = $(ROOT)/ac_simutils
+AC_MATH = $(ROOT)/ac_math
 
-INCDIR ?=
-INCDIR += -I. -I$(SYSTEMC_HOME)/include -I$(BOOST_HOME)/include -I$(CATAPULT_HOME)/Mgc_home/shared/include
-INCDIR += -I$(CONNECTIONS_HOME)/include
-INCDIR += -I$(RAPIDJSON_HOME)/include 
-INCDIR += -I$(MATCHLIB_HOME)/include 
+CC = g++
+#LD_LIBRARY_PATH := $(if $(LD_LIBRARY_PATH),$(LD_LIBRARY_PATH):$(SYSTEMC_HOME)/lib:$(SYSTEMC_HOME)/lib-linux64:$(CATAPULT_HOME)/lib:$(CATAPULT_HOME)/shared/lib,$(CATAPULT_HOME)/lib:$(CATAPULT_HOME)/shared/lib:$(SYSTEMC_HOME)/lib:$(SYSTEMC_HOME)/lib-linux64)
+#export LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="/lib64:/lib:${SYSTEMC_HOME}/lib:${SYSTEMC_HOME}/lib-linux64:${CATAPULT_HOME}/lib:${CATAPULT_HOME}/shared/lib"
 
 LIBDIR ?=
-LIBDIR += -L. -L$(SYSTEMC_HOME)/lib-linux64 -L$(BOOST_HOME)/lib
+LIBDIR += -L$(SYSTEMC_HOME)/lib -L$(SYSTEMC_HOME)/lib-linux64 -L$(CATAPULT_HOME)/lib -L$(CATAPULT_HOME)/shared/lib
+CFLAGS += $(LIBDIR)
 
-CFLAGS ?= 
-CFLAGS += -Wall -Wno-unknown-pragmas -Wno-virtual-move-assign -Wno-unused-local-typedefs -std=c++11 $(INCDIR) $(LIBDIR)
+export CATAPULT_HOME SYSTEMC_HOME CONNECTIONS_HOME MATCHLIB_HOME BOOST_HOME RAPIDJSON_HOME AC_TYPES AC_SIMUTILS AC_MATH
+
+INCDIR ?=
+
+INCDIR += -I$(ROOT)/include
+INCDIR += -I$(CONNECTIONS_HOME)/include
+INCDIR += -I. -I$(SYSTEMC_HOME)/include -I$(SYSTEMC_HOME)/src
+INCDIR += -I$(MATCHLIB_HOME)/include 
+INCDIR += -I$(BOOST_HOME)/include/boost
+INCDIR += -I$(RAPIDJSON_HOME)/include/rapidjson -I$(RAPIDJSON_HOME)
+INCDIR += -I$(AC_TYPES)/include
+INCDIR += -I$(AC_SIMUTILS)/include
+INCDIR += -I$(AC_MATH)/include
+#INCDIR += -I$(MATCHLIB_HOME)/include 
+
+CFLAGS += $(INCDIR)
+
 
 HLS_CATAPULT ?= 1
 ifeq ($(HLS_CATAPULT),1)
@@ -49,7 +68,7 @@ ifeq ($(HLS_CATAPULT),1)
 endif
 #
 LIBS ?=
-LIBS += -lstdc++ -lsystemc -lm -lpthread -lboost_timer -lboost_chrono -lboost_system
+LIBS += -lsystemc -lpthread
 
 # SIM_MODE
 # 0 = Synthesis view of Connections port and combinational code.
@@ -78,4 +97,3 @@ Build: all
 
 clean:
 	rm -rf *.o sim_* dump.vcd
-

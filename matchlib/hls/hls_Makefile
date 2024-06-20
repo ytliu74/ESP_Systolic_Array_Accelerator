@@ -17,15 +17,13 @@
 TOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../)
 
 # Location of submodules
-CONNECTIONS_HOME ?= $(ROOT)/connections
 RAPIDJSON_HOME ?= $(ROOT)/rapidjson
 
-#Update remove BOOST_HOME
 export ROOT           ?= $(TOT)
 export TOP_NAME       ?= $(shell basename `pwd`)
 export CLK_PERIOD     ?= 2
 export SRC_PATH       ?= $(ROOT)/cmod/unittests
-export SEARCH_PATH    ?= $(ROOT)/cmod $(ROOT)/cmod/include $(CONNECTIONS_HOME)/include $(RAPIDJSON_HOME)/include
+export SEARCH_PATH    ?= $(ROOT)/cmod $(ROOT)/cmod/include $(RAPIDJSON_HOME)/include $(BOOST_HOME)/include
 export HLS_CATAPULT   ?= 1
 export RUN_SCVERIFY   ?= 1
 export SYSTEMC_DESIGN ?= 1
@@ -41,6 +39,9 @@ export COMPILER_FLAGS ?=
 # 1 = Cycle-accurate view of Connections port and channel code, CONNECTIONS_ACCURATE_SIM. (default)
 # 2 = Faster TLM view of Connections port and channel code, CONNECTIONS_FAST_SIM.
 SIM_MODE ?= 1
+ifeq ($(SIM_MODE),0)
+	COMPILER_FLAGS += CONNECTIONS_SYN_SIM
+endif
 ifeq ($(SIM_MODE),1)
 	COMPILER_FLAGS += CONNECTIONS_ACCURATE_SIM SC_INCLUDE_DYNAMIC_PROCESSES
 endif
@@ -59,12 +60,18 @@ ifeq ($(RAND_STALL),1)
 	COMPILER_FLAGS += CONN_RAND_STALL
 endif
 
+DEBUG_LEVEL ?= 1
+COMPILER_FLAGS += DEBUG_LEVEL=$(DEBUG_LEVEL)
+
 export FSDB_VCS_RD_SC_VALPTR_PROTECT=1
 hls:
 	catapult -shell -product ultra -file go_hls.tcl
 
 shell:
 	catapult -shell -product ultra
+
+gui:
+	catapult -product ultra
 
 cdc:
 	env RUN_CDESIGN_CHECKER=1 catapult -shell -product ultra -file go_hls.tcl
@@ -82,5 +89,3 @@ clean:
 	/bin/rm -rf ./*.log
 	/bin/rm -rf ./design_checker_*.tcl
 	/bin/rm -rf ./*.csv
-	/bin/rm -rf ./DVE*
-	/bin/rm -rf ./slec*

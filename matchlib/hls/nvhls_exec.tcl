@@ -54,7 +54,9 @@ namespace eval nvhls {
         go dpfsm
         go extract
         
-        if { $RUN_SCVERIFY eq "1" } { go switching }
+        if { $RUN_SCVERIFY eq "1" } {
+          flow run /SCVerify/launch_make ./scverify/Verify_concat_sim_rtl_v_vcs.mk {} SIMTOOL=vcs sim
+        }
 
         project save
 
@@ -87,14 +89,14 @@ namespace eval nvhls {
     }
 
     proc setup_libs {} {
-        solution library add mgc_sample-065nm-dw_beh_dc -- -rtlsyntool DesignCompiler -vendor Sample -technology 065nm -Designware Yes
-        solution library add ram_sample-065nm-singleport_beh_dc
-        solution library add ram_sample-065nm-separate_beh_dc
+        solution library add nangate-45nm_beh -- -rtlsyntool OasysRTL
+        solution library add ram_nangate-45nm-singleport_beh
+        solution library add ram_nangate-45nm-separate_beh
     }
 
     proc setup_clocks {period} {
         set name clk
-        set CLK_PERIODby2 [expr $period/2]
+        set CLK_PERIODby2 [expr $period/2.0]
         directive set -CLOCKS "$name \"-CLOCK_PERIOD $period -CLOCK_EDGE rising -CLOCK_UNCERTAINTY 0.0 -CLOCK_HIGH_TIME $CLK_PERIODby2 -RESET_SYNC_NAME rst -RESET_ASYNC_NAME arst_n -RESET_KIND sync -RESET_SYNC_ACTIVE high -RESET_ASYNC_ACTIVE low -ENABLE_NAME {} -ENABLE_ACTIVE high\"    "
         directive set -CLOCK_NAME $name
     }
@@ -104,10 +106,8 @@ namespace eval nvhls {
     } 
 
     proc run_design_checker {} {
-#      flow run /CDesignChecker/write_options {{-abr -severity error } {-abw -severity error } {-acc -severity warning } {-acs -severity warning } {-aic -severity warning } {-aob -severity error } {-apt -severity info } {-cas -severity error } {-ccc -severity warning } {-cia -severity warning } {-cns -severity warning } {-cwb -severity warning } {-dbz -severity error } {-fxd -severity warning } {-ise -severity error } {-mxs -severity info } {-ovl -severity error } {-pdd -severity warning } {-rrt -severity error } {-stf -severity info } {-sud -severity warning } {-umr -severity error }}
-      # (enyuyang 20200204, fix design checker bug)
-      flow run /CDesignChecker/write_options {-abr -abw -aic -aob -apt -cas -ccc -cia -cns -cwb -dbz -fxd -ise -mxs -osl -ovl -pdd -rrt -stf -sud -umr } {-abr -abw -cas -dbz -ise -umr }
-      flow run /CDesignChecker/launch_sleccpc_sh ./CDesignChecker/design_checker.sh
+      flow run /CDesignChecker/write_options {VER_MODE Custom RULES {{-abr -severity error } {-abw -severity error } {-acc -severity warning } {-acs -severity warning } {-aic -severity warning } {-als -severity warning } {-aob -severity error } {-apt -severity info } {-cas -severity error } {-ccc -severity warning } {-cia -severity warning } {-cmc -severity info } {-cns -severity warning } {-cwb -severity warning } {-dbz -severity error } {-fxd -severity warning } {-ise -severity error } {-lrc -severity info } {-mxs -severity info } {-ovl -severity error } {-pdd -severity warning } {-rrt -severity error } {-sat -severity warning } {-stf -severity info } {-sud -severity warning } {-umr -severity error }}} 
+      flow run /CDesignChecker/launch_sleccpc_sh ./CDesignChecker/design_checker.sh Custom
     }
 
     proc usercmd_pre_analyze {} {}
